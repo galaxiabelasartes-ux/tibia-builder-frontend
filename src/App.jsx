@@ -1,23 +1,72 @@
 import { useState, useEffect } from "react";
 import API from "./api";
+import Login from "./Login";
+import Register from "./Register";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [showRegister, setShowRegister] = useState(false);
   const [items, setItems] = useState([]);
   const [monsters, setMonsters] = useState([]);
 
-  useEffect(() => {
-    API.get("/items")
-      .then((res) => setItems(res.data))
-      .catch((err) => console.error(err));
+  const fetchUser = async () => {
+    try {
+      const res = await API.get("/users/me");
+      setUser(res.data.user);
+    } catch {
+      setUser(null);
+    }
+  };
 
-    API.get("/monsters")
-      .then((res) => setMonsters(res.data))
-      .catch((err) => console.error(err));
+  useEffect(() => {
+    fetchUser();
   }, []);
+
+  if (!user) {
+    return (
+      <div>
+        {showRegister ? (
+          <Register onRegister={() => setShowRegister(false)} />
+        ) : (
+          <Login onLogin={fetchUser} />
+        )}
+
+        <div className="text-center mt-4">
+          {showRegister ? (
+            <button
+              onClick={() => setShowRegister(false)}
+              className="text-blue-600 underline"
+            >
+              Já tem conta? Faça login
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowRegister(true)}
+              className="text-blue-600 underline"
+            >
+              Não tem conta? Cadastre-se
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Tibia Builder Frontend</h1>
+      <h1 className="text-2xl font-bold mb-4">
+        Tibia Builder Frontend — Bem-vindo, {user.username}!
+      </h1>
+
+      <button
+        onClick={() => {
+          localStorage.removeItem("token");
+          setUser(null);
+        }}
+        className="bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Sair
+      </button>
 
       <h2 className="text-xl mt-6">Items</h2>
       <ul>
