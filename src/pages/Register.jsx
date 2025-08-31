@@ -17,8 +17,9 @@ function Register() {
         params: { username, email, password },
       });
       navigate("/login");
-    } catch {
-      setError("Erro ao registrar usuário. Tente outro email.");
+    }  catch (err) {
+  console.error(err.response?.data || err.message);
+  setError("Erro: " + (err.response?.data?.detail || "Falha ao registrar"));
     }
   };
 
